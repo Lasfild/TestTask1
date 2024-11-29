@@ -5,52 +5,74 @@ public class Hedgehogs
 {
     public static int MinMeetingsToUnify(int[] population, int targetColor)
     {
-        var queue = new Queue<(int[] population, int steps)>();
-        var visited = new HashSet<string>();
+        var visitedPaths = new HashSet<string>();
+        var queue = new Queue<(int[] state, int steps, List<string> path)>();
 
-        queue.Enqueue((population, 0));
-        visited.Add(string.Join(",", population));
+        queue.Enqueue((population, 0, new List<string> { $"Start: [{string.Join(", ", population)}]" }));
+        visitedPaths.Add(string.Join(",", population));
 
         while (queue.Count > 0)
         {
-            var (current, steps) = queue.Dequeue();
+            var (current, steps, path) = queue.Dequeue();
             int red = current[0], green = current[1], blue = current[2];
 
             if (current[targetColor] == red + green + blue)
-                return steps;
-            var nextStates = new List<int[]>();
-
-            // Синий + Зелёный -> 2 Красных
-            if (green > 0 && blue > 0)
-                nextStates.Add(new int[] { red + 2, green - 1, blue - 1 });
-
-            // Красный + Синий -> 2 Зелёных
-            if (red > 0 && blue > 0)
-                nextStates.Add(new int[] { red - 1, green + 2, blue - 1 });
-
-            // Зелёный + Красный -> 2 Синих
-            if (red > 0 && green > 0)
-                nextStates.Add(new int[] { red - 1, green - 1, blue + 2 });
-
-            foreach (var nextState in nextStates)
             {
-                string stateKey = string.Join(",", nextState);
-
-                if (!visited.Contains(stateKey))
+                foreach (var step in path)
                 {
-                    queue.Enqueue((nextState, steps + 1));
-                    visited.Add(stateKey);
+                    Console.WriteLine(step);
                 }
+                return steps;
+            }
+
+            var nextStates = new List<(int[] newState, string transition)>
+            {
+                // Синий + Зелёный = 2 Красных
+                (green > 0 && blue > 0
+                    ? new int[] { red + 2, green - 1, blue - 1 }
+                    : null,
+                "Blue + Green = 2 Red"),
+
+                // Красный + Синий = 2 Зелёных
+                (red > 0 && blue > 0
+                    ? new int[] { red - 1, green + 2, blue - 1 }
+                    : null,
+                "Red + Blue = 2 Green"),
+
+                // Зелёный + Красный = 2 Синих
+                (red > 0 && green > 0
+                    ? new int[] { red - 1, green - 1, blue + 2 }
+                    : null,
+                "Green + Red = 2 Blue")
+            };
+
+            foreach (var (newState, transition) in nextStates)
+            {
+                if (newState == null) continue;
+
+                string newStateKey = string.Join(",", newState);
+
+                // Проверка на цикл
+                if (visitedPaths.Contains(newStateKey))
+                    continue;
+
+                visitedPaths.Add(newStateKey);
+
+                var newPath = new List<string>(path)
+                {
+                    $"Step {steps + 1}: {transition} => [{string.Join(", ", newState)}]"
+                };
+
+                queue.Enqueue((newState, steps + 1, newPath));
             }
         }
-
         return -1;
     }
 
     public static void Main()
     {
         int[] population = { 8, 1, 9 };
-        int targetColor = 0;
+        int targetColor = 0; // 0 1 2 = RGB 
 
         int result = MinMeetingsToUnify(population, targetColor);
 
