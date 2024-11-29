@@ -72,10 +72,13 @@ public class Hedgehogs
     public static void Main()
     {
         int[] population = { 8, 1, 9 };
-        int targetColor = 0; // 0 1 2 = RGB 
+        int targetColor = 1; // 0 1 2 = RGB 
 
         int result = MinMeetingsToUnify(population, targetColor);
 
         Console.WriteLine($"Result: {result}");
     }
 }
+
+// попробовал 3 разных алгоритма, опираясь на результаты которых могу с 99% уверенностью сказать что что с конфигурацией ежиков 8, 1, 9
+// достижение поставленной цели в перекрашивании всех ежиков в любой из трех цветов невыполнимо
